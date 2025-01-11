@@ -19,12 +19,7 @@ namespace TaskOne.UI
             WriteLine("|        Grade Point Average (GPA) calculator               |");
             WriteLine("|___________________________________________________________|");
             WriteLine();
-            WriteLine("Welcome!!!!!\n To calculate your GPA, enter your course details in this format:");
-            WriteLine(" 1-course-code\n 2-course-unit \n 3-course-score");
-            WriteLine("Eg: MTH101    5     74, or ENG103     4    60");
-
-            
-            ReadLine();
+            WriteLine("Welcome!!!!!\n To calculate your GPA, enter your course details");
 
             var student = new Student();
             var studentService = new StudentService();
@@ -37,7 +32,7 @@ namespace TaskOne.UI
             start:
                 while (invalid)
                 {
-                    Write("\nCourse Details: ");
+                    Console.Write("Press Enter to input details");
                     string[] input = ReadLine().Split(", ");
                    
                         try

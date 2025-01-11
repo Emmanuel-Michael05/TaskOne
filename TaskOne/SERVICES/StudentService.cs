@@ -14,57 +14,75 @@ namespace TaskOne.SERVICES
             foreach (string entry in input)
             {
                 
-                Course course = null; // Declare course outside the try block
-                bool isValid = false; // Flag to track if the input is valid
+                Course course = null; 
+                bool isValid = false; 
 
                 while (!isValid)
                 {
                     try
                     {
-                        Console.WriteLine("Enter course details in the format: <CourseName> <CourseUnits> <CourseScore>");
-                        string userInput = Console.ReadLine(); // Use a different variable name for input
+                        Console.WriteLine("Enter all course details separated by commas.");
+                        Console.WriteLine("Each course detail should be in the format: <CourseCode> <CourseUnits> <CourseScore>");
+                        Console.WriteLine("For example: MTH101 5 74, ENG103 4 60, PHY102 3 85");
+                        string userInput = Console.ReadLine(); 
 
                         if (string.IsNullOrWhiteSpace(userInput))
                         {
                             throw new ArgumentException("The entry string is null or empty.");
                         }
 
-                        string[] courseArray = userInput.Split(' ');
+                        // Split the input into individual course batches
+                        string[] courseBatches = userInput.Split(',');
 
-                        if (courseArray.Length < 3)
+                        foreach (string batch in courseBatches)
                         {
-                            throw new ArgumentException("The entry does not contain enough information to create a course.");
+                            string trimmedBatch = batch.Trim(); 
+                            string[] courseArray = trimmedBatch.Split(' ');
+
+                            if (courseArray.Length < 3)
+                            {
+                                throw new ArgumentException($"The entry '{trimmedBatch}' does not contain enough information to create a course.");
+                            }
+
+                            string courseCode = courseArray[0];
+
+                            if (!int.TryParse(courseArray[1], out int courseUnit))
+                            {
+                                throw new FormatException($"Course Unit in '{trimmedBatch}' must be a valid integer.");
+                            }
+                            if (courseUnit < 1 || courseUnit > 5)
+                            {
+                                throw new ArgumentOutOfRangeException($"Course Unit in '{trimmedBatch}' must be between 1 and 5.");
+                            }
+
+                            if (!int.TryParse(courseArray[2], out int courseScore))
+                            {
+                                throw new FormatException($"Course Score in '{trimmedBatch}' must be a valid integer.");
+                            }
+                            if (courseScore < 0 || courseScore > 100)
+                            {
+                                throw new ArgumentOutOfRangeException($"Course Score in '{trimmedBatch}' must be between 0 and 100.");
+                            }
+                            course = new Course(courseCode, courseUnit, courseScore);
+
+                            if (student?.Courses == null)
+                            {
+                                throw new NullReferenceException("Student or their courses list is null.");
+                            }
+
+                            student.Courses.Add(course);
+
+                            // Update totals for each course
+                            student.TotalCourseUnits += course.CourseUnits;
+                            student.TotalWeightPoints += course.WeightPoint;
+                            if (course.StudentGrade != 0)
+                            {
+                                student.TotalCourseUnitsPassed += course.CourseUnits;
+                            }
                         }
 
-                        string courseName = courseArray[0];
-
-                        if (!int.TryParse(courseArray[1], out int courseUnit))
-                        {
-                            throw new FormatException("Course Unit must be a valid integer.");
-                        }
-                        if (courseUnit < 1 || courseUnit > 5)
-                        {
-                            throw new ArgumentOutOfRangeException("Course Unit must be between 1 and 5.");
-                        }
-
-                        if (!int.TryParse(courseArray[2], out int courseScore))
-                        {
-                            throw new FormatException("Course Score must be a valid integer.");
-                        }
-                        if (courseScore < 0 || courseScore > 100)
-                        {
-                            throw new ArgumentOutOfRangeException("Course Score must be between 0 and 100.");
-                        }
-
-                        course = new Course(courseName, courseUnit, courseScore);
-
-                        if (student?.Courses == null)
-                        {
-                            throw new NullReferenceException("Student or their courses list is null.");
-                        }
-
-                        student.Courses.Add(course);
-                        isValid = true; // Input is valid, exit the loop
+                        // If we successfully process all batches, set the flag to exit the loop
+                        isValid = true;
                     }
                     catch (ArgumentException ex)
                     {
@@ -83,18 +101,9 @@ namespace TaskOne.SERVICES
                     }
                     catch (Exception ex)
                     {
-                        // Catch-all for any unexpected errors
                         Console.WriteLine($"An unexpected error occurred: {ex.Message}");
                         Console.WriteLine("Please try again.");
                     }
-                }
-
-                // Update totals after successful course creation
-                if (course != null)
-                {
-                    student.TotalCourseUnits += course.CourseUnits;
-                    student.TotalWeightPoints += course.WeightPoint;
-                    if (course.StudentGrade != 0) student.TotalCourseUnitsPassed += course.CourseUnits;
                 }
 
             }
